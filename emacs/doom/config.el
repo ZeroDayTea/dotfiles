@@ -36,7 +36,7 @@
 
 ;; This determines the style of line numbers in effect. If set to `nil', line
 ;; numbers are disabled. For relative line numbers, set this to `relative'.
-(setq display-line-numbers-type t)
+(setq display-line-numbers-type 'relative)
 
 ;; If you use `org' and don't want your org files in the default location below,
 ;; change `org-directory'. It must be set before org loads!
@@ -74,3 +74,31 @@
 ;;
 ;; You can also try 'gd' (or 'C-c c d') to jump to their definition and see how
 ;; they are implemented.
+
+;; tree-sitter
+(use-package! treesit-auto
+  :config
+  (global-treesit-auto-mode)
+
+  (setq treesit-auto-install 'prompt))
+
+;; lsp
+(after! lsp-mode
+  (setq lsp-clients-clangd-executable "clangd"
+
+        ;; responsiveness / performance
+        lsp-idle-delay 0.25
+        lsp-log-io nil
+
+        lsp-completion-provider :capf))
+
+;; company completion ui tuning
+(after! company
+  (setq company-idle-delay 0.05
+        company-minimum-prefix-length 1
+        company-tooltip-align-annotations t
+        company-selection-wrap-around t))
+
+;; nicer completion popups
+(use-package! company-box
+  :hook (company-mode . company-box-mode))
