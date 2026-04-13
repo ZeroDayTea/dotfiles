@@ -1,15 +1,28 @@
-{ description = "zdtdev";
+{
+  description = "zdtdev";
 
-  inputs = { nixpkgs.url = "github:NixOS/nixpkgs";
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs";
+    pwndbg.url = "github:pwndbg/pwndbg";
   };
 
-  outputs = { self, nixpkgs }: {
+  outputs = { self, nixpkgs, pwndbg }: {
     packages.x86_64-linux.default =
       let
         pkgs = import nixpkgs {
           system = "x86_64-linux";
           config.allowUnfree = true;
         };
+
+        pythonWithPackages = pkgs.python3.withPackages (ps: with ps; [
+          pip
+          setuptools
+          isort
+          pytest
+          pwntools
+          pycryptodome
+        ]);
+
       in pkgs.buildEnv {
         name = "zdt-dev-env";
         paths = with pkgs; [
@@ -17,13 +30,13 @@
           emacs
 
           # llms
-          claude-code codex
+          claude-code
 
           # build
-          cmake gcc gnumake pkg-config clang-tools gdb
+          cmake gcc gnumake pkg-config clang-tools gdb qemu
 
           # lsp/language-servers
-          nodejs_24 rust-analyzer
+          rust-analyzer
 
           # languages
           ocaml opam dune_3 ocamlPackages.utop ocamlPackages.ocp-indent ocamlPackages.merlin
@@ -36,15 +49,23 @@
 
           ruby_3_4 gem
 
-          python3 python3Packages.pip python3Packages.setuptools python3Packages.isort python3Packages.pytest pipenv pwntools python3Packages.pycryptodome
+          pythonWithPackages pipenv
 
           solc
+
+          fnm
 
           # dev dependencies
           openssl.dev zlib.dev
 
           # utilities
-          git curl wget vim ripgrep findutils fd pandoc shellcheck unzip wireshark
+          git curl wget vim ripgrep findutils fd pandoc shellcheck unzip wireshark docker docker-compose
+
+          pwndbg.packages.x86_64-linux.default
+
+          # arm64
+          pkgsCross.aarch64-multiplatform.buildPackages.gcc
+          pkgsCross.aarch64-multiplatform.buildPackages.binutils
         ];
       };
   };

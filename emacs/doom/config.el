@@ -85,12 +85,14 @@
 ;; lsp
 (after! lsp-mode
   (setq lsp-clients-clangd-executable "clangd"
-
-        ;; responsiveness / performance
-        lsp-idle-delay 0.25
-        lsp-log-io nil
-
-        lsp-completion-provider :capf))
+	lsp-idle-delay 0.25
+	lsp-completion-provider :capf
+        lsp-clients-clangd-args
+        '("--background-index"
+          "--clang-tidy"
+          "--completion-style=detailed"
+	  "--header-insertion=never"
+          "--query-driver=/home/zdt/.nix-profile/bin/g++,/home/zdt/.nix-profile/bin/gcc")))
 
 ;; company completion ui tuning
 (after! company
@@ -102,3 +104,12 @@
 ;; nicer completion popups
 (use-package! company-box
   :hook (company-mode . company-box-mode))
+
+;; fix autosave dir
+(after! auto-save
+  (setq auto-save-dir (expand-file-name "autosave/" doom-cache-dir))
+  (make-directory auto-save-dir t))
+
+(setq auto-save-file-name-transforms
+      `((".*" ,(expand-file-name "autosave/" doom-cache-dir) t)))
+(make-directory (expand-file-name "autosave/" doom-cache-dir) t)
