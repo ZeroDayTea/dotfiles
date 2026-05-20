@@ -4,15 +4,20 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs";
     pwndbg.url = "github:pwndbg/pwndbg";
+    flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = { self, nixpkgs, pwndbg }: {
-    packages.x86_64-linux.default =
+  outputs = { self, nixpkgs, pwndbg, flake-utils }:
+    flake-utils.lib.eachSystem [ "x86_64-linux" "aarch64-darwin" ] (system:
       let
         pkgs = import nixpkgs {
-          system = "x86_64-linux";
+          inherit system;
           config.allowUnfree = true;
         };
+
+        inherit (pkgs) lib;
+        isLinux = pkgs.stdenv.isLinux;
+        isDarwin = pkgs.stdenv.isDarwin;
 
         pythonWithPackages = pkgs.python3.withPackages (ps: with ps; [
           pip
@@ -23,50 +28,67 @@
           pycryptodome
         ]);
 
-      in pkgs.buildEnv {
-        name = "zdt-dev-env";
-        paths = with pkgs; [
-          # emacs
-          emacs
+      in {
+        packages.default = pkgs.buildEnv {
+          name = "zdt-dev-env";
+          paths = with pkgs; [
+            # emacs
+            (if isDarwin then emacs-macport else emacs)
 
-          # llms
-          claude-code
+            # llms
+            claude-code
 
-          # build
-          cmake gcc gnumake pkg-config clang-tools gdb qemu
+            # build
+            cmake gnumake pkg-config clang-tools qemu
 
-          # lsp/language-servers
-          rust-analyzer
+            # editor support
+            nodejs
+            coreutils
+            coreutils-prefixed
+            nerd-fonts.symbols-only
+            nixfmt
 
-          # languages
-          ocaml opam dune_3 ocamlPackages.utop ocamlPackages.ocp-indent ocamlPackages.merlin
+            # lsp / language servers
+            rust-analyzer
+            typescript-language-server
+            bash-language-server
+            yaml-language-server
+            nil
+            pyright
 
-          ghc stack haskell-language-server haskellPackages.hoogle hlint stylish-haskell cabal-install
+            # languages
+            ocaml opam dune_3 ocamlPackages.utop ocamlPackages.ocp-indent ocamlPackages.merlin
 
-          rustc cargo rustfmt clippy
+            ghc stack haskell-language-server haskellPackages.hoogle hlint stylish-haskell cabal-install
 
-          zig
+            rustc cargo rustfmt clippy
 
-          ruby_3_4 gem
+            zig
 
-          pythonWithPackages pipenv
+            ruby_3_4
 
-          solc
+            pythonWithPackages pipenv
 
-          fnm
+            solc
 
-          # dev dependencies
-          openssl.dev zlib.dev
+            fnm
 
-          # utilities
-          git curl wget vim ripgrep findutils fd pandoc shellcheck unzip wireshark docker docker-compose
+            # dev dependencies
+            openssl.dev zlib.dev
 
-          pwndbg.packages.x86_64-linux.default
+            # utilities
+            git curl wget vim ripgrep findutils fd pandoc shellcheck unzip
+          ] ++ lib.optionals isLinux [
+            gcc gdb wireshark docker docker-compose
 
-          # arm64
-          pkgsCross.aarch64-multiplatform.buildPackages.gcc
-          pkgsCross.aarch64-multiplatform.buildPackages.binutils
-        ];
-      };
-  };
+            pwndbg.packages.${system}.default
+
+            # arm64 cross
+            pkgsCross.aarch64-multiplatform.buildPackages.gcc
+            pkgsCross.aarch64-multiplatform.buildPackages.binutils
+          ] ++ lib.optionals isDarwin [
+            lldb
+          ];
+        };
+      });
 }
