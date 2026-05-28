@@ -77,7 +77,7 @@
             openssl.dev zlib.dev
 
             # utilities
-            git curl wget vim ripgrep findutils fd pandoc shellcheck unzip mermaid-cli
+            git curl wget vim ripgrep findutils fd pandoc shellcheck unzip mermaid-cli gh
           ] ++ lib.optionals isLinux [
             gcc gdb wireshark docker docker-compose
 
