@@ -105,6 +105,12 @@
 (use-package! company-box
   :hook (company-mode . company-box-mode))
 
+;; swift / sourcekit-lsp
+(after! lsp-sourcekit
+  (setq lsp-sourcekit-executable
+        (or (executable-find "sourcekit-lsp")
+            "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/sourcekit-lsp")))
+
 ;; fix autosave dir
 (after! auto-save
   (setq auto-save-dir (expand-file-name "autosave/" doom-cache-dir))
