@@ -43,8 +43,7 @@
 
             # editor support
             nodejs
-            coreutils
-            coreutils-prefixed
+            (if isDarwin then coreutils-prefixed else coreutils)
             nerd-fonts.symbols-only
             nixfmt
 
