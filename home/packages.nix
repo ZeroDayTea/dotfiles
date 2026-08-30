@@ -100,7 +100,8 @@ let
 
     inputs.pwndbg.packages.${system}.default
 
-    pkgsCross.aarch64-multiplatform.buildPackages.binutils
+    # binutils omitted: its unprefixed `ldd` shadows the native one, and the
+    # cross gcc already pulls the prefixed aarch64-*-ld it needs
     pkgsCross.aarch64-multiplatform.buildPackages.gcc
   ]);
 

@@ -45,6 +45,12 @@ cd ~/dotfiles && ./switch.sh
 ```sh
 ./switch.sh                  # rebuild and activate (full profile)
 ./switch.sh headless         # activate a different profile
-nix flake update             # bump nixpkgs / home-manager / pwndbg
-home-manager generations     # list generations
+
+nix flake update             # bump every input, then ./switch.sh
+nix flake update nixpkgs     # bump one input only
+home-manager packages        # what is installed, with versions
+home-manager generations     # list generations; run one's activate to roll back
 ```
+
+Commit `flake.lock` after updating — it is what pins every other machine to the
+same versions.
